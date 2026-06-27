@@ -1,9 +1,16 @@
 const{Sequelize} = require('sequelize');
 
-const sequelize = new Sequelize('products','root','root',{
-    host:'localhost',
-    dialect:'mysql'
-});
+const sequelize = new Sequelize(
+    process.env.DB_NAME || 'products',
+    process.env.DB_USER || 'root',
+    process.env.DB_PASSWORD || 'root',
+    {
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 3306,
+        dialect: 'mysql'
+    }
+);
+
 sequelize.authenticate().then(()=>{
     console.log('Connection has been established successfully.');
 }).catch(err=>{
@@ -11,3 +18,4 @@ sequelize.authenticate().then(()=>{
 });
 
 module.exports = sequelize;
+
