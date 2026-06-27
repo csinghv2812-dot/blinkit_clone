@@ -73,9 +73,27 @@ const seedProducts = async () => {
     }
 };
 
+const connectWithRetry = async (maxRetries = 10, delay = 3000) => {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            console.log(`Attempting to connect to database (attempt ${i + 1}/${maxRetries})...`);
+            await sequelize.authenticate();
+            console.log('Database connection established successfully.');
+            return;
+        } catch (error) {
+            console.error(`Connection attempt ${i + 1} failed:`, error.message);
+            if (i < maxRetries - 1) {
+                console.log(`Retrying in ${delay / 1000} seconds...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+    throw new Error('Failed to connect to database after maximum retries');
+};
+
 const startServer = async () => {
     try {
-        await sequelize.authenticate();
+        await connectWithRetry();
         await sequelize.sync({ alter: true });
         await seedProducts();
 
@@ -93,3 +111,4 @@ if (require.main === module) {
 }
 
 module.exports = app;
+
